@@ -16,7 +16,7 @@ USER=$(jq -r '.username' $CONFIG)
 PASS=$(jq -r '.password' $CONFIG)
 MCP=$(jq -r '.mcp_enabled' $CONFIG)
 
-cat >/opt/app/.env <<'EOF_ENV'
+cat >/opt/app/.env <<EOF_ENV
 OPENAI_API_KEY=${OPENAI_API_KEY}
 HA_URL=${HA_URL}
 HA_TOKEN=${HA_TOKEN}
