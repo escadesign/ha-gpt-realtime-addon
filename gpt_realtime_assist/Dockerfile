@@ -9,7 +9,8 @@ RUN apk add --no-cache \
     alsa-lib alsa-utils \
     portaudio portaudio-dev \
     ffmpeg \
-    python3 py3-pip py3-aiohttp py3-websockets \
+    python3 py3-pip py3-aiohttp \
+
     build-base python3-dev musl-dev
 
 WORKDIR /opt/app
