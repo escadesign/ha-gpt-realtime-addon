@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv bash
+set -e
+/opt/app/bootstrap.sh
+exec python3 /opt/app/main.py
