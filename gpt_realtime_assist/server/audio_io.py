@@ -18,9 +18,7 @@ class AudioIO:
         except Exception:
             pass
 
-        if self.in_dev or self.out_dev:
-            sd.default.device = (self.in_dev or None, self.out_dev or None)
-
+        
     def list_devices(self):
         return sd.query_devices()
 
@@ -54,7 +52,7 @@ class AudioIO:
         except PortAudioError as err:
             if not self._capture_warned:
                 dev = self.in_dev or "default"
-                print(f"Failed to start capture on {dev}: {err}")
+                print(f"Failed to start capture on {dev} (check HA audio mapping): {err}")
                 self._capture_warned = True
             self._in = None
             return False
@@ -87,7 +85,7 @@ class AudioIO:
         except PortAudioError as err:
             if not self._playback_warned:
                 dev = self.out_dev or "default"
-                print(f"Failed to open playback device {dev}: {err}")
+                print(f"Failed to open playback device {dev} (check HA audio mapping): {err}")
                 self._playback_warned = True
             self._out = None
             return False
