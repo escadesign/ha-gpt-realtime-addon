@@ -1,7 +1,7 @@
 name: Realtime Assist (OpenAI gpt-realtime)
 slug: gpt_realtime_assist
 description: "OpenAI gpt-realtime Audio Assistenz für Home Assistant mit Push-to-Talk"
-version: 0.1.1
+version: 0.1.2
 url: https://github.com/escadesign/ha-gpt-realtime-addon
 arch:
   - aarch64
