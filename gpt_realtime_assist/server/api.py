@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from .config import settings
-from .audio_io import AudioIO
-from .realtime_client import RealtimeClient
-import uvicorn, asyncio, base64
+from config import settings
+from audio_io import AudioIO
+from realtime_client import RealtimeClient
+import uvicorn, asyncio
 
 app=FastAPI()
 security=HTTPBasic()

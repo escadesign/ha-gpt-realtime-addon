@@ -1,5 +1,5 @@
 import requests, json, time
-from .config import settings
+from config import settings
 
 class HABridge:
     def __init__(self):

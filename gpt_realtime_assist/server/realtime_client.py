@@ -1,8 +1,8 @@
 import asyncio, json, websockets, base64
 from typing import Callable
-from .config import settings
-from .util import b64_pcm, Stopwatch
-from .ha_bridge import HABridge
+from config import settings
+from util import b64_pcm, Stopwatch
+from ha_bridge import HABridge
 
 REALTIME_URL="wss://api.openai.com/v1/realtime?model=gpt-realtime"
 
