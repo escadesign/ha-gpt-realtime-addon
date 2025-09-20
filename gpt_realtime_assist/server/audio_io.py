@@ -12,21 +12,21 @@ def _normalize_device(value: Optional[str]) -> Optional[Union[int, str]]:
         return int(value)
     except (ValueError, TypeError):
         if isinstance(value, str):
-            card=None
-            m=re.search(r"CARD=([^,]+)", value)
+            card = None
+            m = re.search(r"CARD=([^,]+)", value)
             if m:
-                card=m.group(1)
+                card = m.group(1)
             elif value.startswith("hw:") or value.startswith("plughw:"):
                 try:
-                    card=value.split(":",1)[1].split(",",1)[0]
+                    card = value.split(":", 1)[1].split(",", 1)[0]
                 except Exception:
-                    card=None
+                    card = None
             if card:
                 os.environ.setdefault("ALSA_CARD", card)
                 os.environ.setdefault("ALSACTL_CARD", card)
                 os.environ.setdefault("PA_ALSA_CARD", card)
                 os.environ.setdefault("AUDIODEV", value)
-                return None
+            return value
         return value
 
 class AudioIO:
