@@ -30,3 +30,20 @@ API_USERNAME=${USER}
 API_PASSWORD=${PASS}
 MCP_ENABLED=${MCP}
 EOF_ENV
+
+# ensure ALSA default uses configured card if plughw/hw is specified
+ASOUND_RC=/root/.asoundrc
+CARD_NAME=
+if [[ "$IN_DEV" =~ CARD=([^,]+) ]]; then
+  CARD_NAME="${BASH_REMATCH[1]}"
+elif [[ "$IN_DEV" == hw:* || "$IN_DEV" == plughw:* ]]; then
+  CARD_NAME="$(echo "$IN_DEV" | cut -d':' -f2 | cut -d',' -f1)"
+fi
+
+if [ -n "$CARD_NAME" ]; then
+  cat >"$ASOUND_RC" <<EOF_ASOUND
+defaults.pcm.card $CARD_NAME
+defaults.pcm.device 0
+defaults.ctl.card $CARD_NAME
+EOF_ASOUND
+fi
