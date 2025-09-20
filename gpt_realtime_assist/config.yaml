@@ -10,6 +10,7 @@ startup: services
 boot: auto
 init: false
 audio: true
+udev: true
 host_network: true
 ingress: true
 ingress_port: 0
