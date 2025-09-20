@@ -1,5 +1,6 @@
-import asyncio, json, websockets, base64
+import asyncio, json, base64
 from typing import Callable
+from aiohttp import ClientSession, WSMsgType
 from config import settings
 from util import b64_pcm, Stopwatch
 from ha_bridge import HABridge
@@ -8,18 +9,26 @@ REALTIME_URL="wss://api.openai.com/v1/realtime?model=gpt-realtime"
 
 class RealtimeClient:
     def __init__(self, audio, on_latency:Callable[[float],None]):
-        self.audio=audio; self.on_latency=on_latency
-        self.ws=None; self.listening=False; self.speaking=False
+        self.audio=audio
+        self.on_latency=on_latency
+        self.ws=None
+        self.session=None
+        self.listening=False
+        self.speaking=False
         self.ha=HABridge()
+        self.loop=None
 
     async def connect(self):
-        self.ws=await websockets.connect(
+        self.loop=asyncio.get_running_loop()
+        self.session=ClientSession()
+        self.ws=await self.session.ws_connect(
             REALTIME_URL,
-            extra_headers={
+            headers={
                 "Authorization": f"Bearer {settings.openai_api_key}",
                 "OpenAI-Beta": "realtime=v1"
             },
-            max_size=20*1024*1024,
+            max_msg_size=20*1024*1024,
+            heartbeat=30,
         )
         await self.session_update()
         asyncio.create_task(self.recv_loop())
@@ -51,15 +60,21 @@ class RealtimeClient:
             ]
           }
         }
-        await self.ws.send(json.dumps(payload))
+        await self.ws.send_json(payload)
 
     async def recv_loop(self):
         sw=None
         while True:
-            msg=await self.ws.recv()
-            if isinstance(msg, bytes):
-                self.audio.play_bytes(msg); continue
-            data=json.loads(msg); t=data.get("type")
+            msg=await self.ws.receive()
+            if msg.type==WSMsgType.BINARY:
+                self.audio.play_bytes(msg.data)
+                continue
+            if msg.type==WSMsgType.TEXT:
+                data=json.loads(msg.data); t=data.get("type")
+            elif msg.type in (WSMsgType.CLOSED, WSMsgType.ERROR):
+                break
+            else:
+                continue
 
             if t=="response.output_audio.delta":
                 self.audio.play_bytes(base64.b64decode(data["delta"]))
@@ -75,34 +90,49 @@ class RealtimeClient:
                     args=data.get("arguments",{})
                     try:
                         res=self.ha.call(args["domain"], args["service"], args.get("service_data",{}))
-                        await self.ws.send(json.dumps({
+                        await self.ws.send_json({
                           "type":"conversation.item.create",
-                          "item":{"type":"function_call_output","call_id":data.get("call_id",""),"output":json.dumps(res)}
-                        }))
-                        await self.ws.send(json.dumps({"type":"response.create"}))
+                          "item":{
+                            "type":"function_call_output",
+                            "call_id":data.get("call_id",""),
+                            "output":json.dumps(res)
+                          }
+                        })
+                        await self.ws.send_json({"type":"response.create"})
                     except Exception as e:
-                        await self.ws.send(json.dumps({
+                        await self.ws.send_json({
                           "type":"conversation.item.create",
-                          "item":{"type":"function_call_output","call_id":data.get("call_id",""),"output":f"ERROR {e}"}
-                        }))
-                        await self.ws.send(json.dumps({"type":"response.create"}))
+                          "item":{
+                            "type":"function_call_output",
+                            "call_id":data.get("call_id",""),
+                            "output":f"ERROR {e}"
+                          }
+                        })
+                        await self.ws.send_json({"type":"response.create"})
 
     async def _send_audio(self, pcm:bytes):
-        await self.ws.send(json.dumps({"type":"input_audio_buffer.append","audio": b64_pcm(pcm)}))
+        await self.ws.send_json({"type":"input_audio_buffer.append","audio": b64_pcm(pcm)})
 
     async def ptt_start(self):
         self.listening=True
         def cb(pcm:bytes):
-            if self.listening:
-                asyncio.run_coroutine_threadsafe(self._send_audio(pcm), asyncio.get_event_loop())
+            if self.listening and self.loop:
+                asyncio.run_coroutine_threadsafe(self._send_audio(pcm), self.loop)
         self.audio.start_capture(cb)
 
     async def ptt_stop_and_respond(self):
-        self.listening=False; self.audio.stop_capture()
-        await self.ws.send(json.dumps({"type":"input_audio_buffer.commit"}))
-        await self.ws.send(json.dumps({"type":"response.create","response":{"modalities":["audio"]}}))
+        self.listening=False
+        self.audio.stop_capture()
+        await self.ws.send_json({"type":"input_audio_buffer.commit"})
+        await self.ws.send_json({"type":"response.create","response":{"modalities":["audio"]}})
 
     async def cancel(self):
         if self.speaking:
-            await self.ws.send(json.dumps({"type":"response.cancel"}))
+            await self.ws.send_json({"type":"response.cancel"})
             self.speaking=False
+
+    async def close(self):
+        if self.ws:
+            await self.ws.close()
+        if self.session:
+            await self.session.close()

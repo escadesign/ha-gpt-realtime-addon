@@ -3,12 +3,11 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from config import settings
 from audio_io import AudioIO
 from realtime_client import RealtimeClient
-import uvicorn, asyncio
+import uvicorn
 
 app=FastAPI()
 security=HTTPBasic()
 state={"latency_ms":None}
-loop=asyncio.get_event_loop()
 audio=AudioIO(settings.sample_rate, settings.input_device, settings.output_device)
 client=RealtimeClient(audio, on_latency=lambda ms: state.__setitem__("latency_ms", ms))
 
@@ -21,6 +20,13 @@ def check(creds: HTTPBasicCredentials = Depends(security)):
 async def startup():
     await client.connect()
     audio.start_playback()
+
+@app.on_event("shutdown")
+async def shutdown():
+    await client.close()
+    audio.stop_capture()
+    audio.stop_playback()
+
 
 @app.post("/api/ptt/start")
 async def ptt_start(credentials: HTTPBasicCredentials = Depends(check)):

@@ -1,6 +1,5 @@
 fastapi
 uvicorn[standard]
-websockets
 aiohttp
 sounddevice
 numpy
