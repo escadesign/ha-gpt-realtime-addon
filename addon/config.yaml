@@ -1,0 +1,50 @@
+name: Realtime Assist (OpenAI gpt-realtime)
+slug: gpt_realtime_assist
+version: 0.1.0
+arch:
+  - aarch64
+  - amd64
+startup: services
+boot: auto
+init: false
+audio: true
+host_network: true
+ingress: true
+ingress_port: 0
+panel_icon: mdi:account-voice
+map:
+  - share:rw
+options:
+  openai_api_key: ""
+  language: de
+  voice: alloy
+  sample_rate: 24000
+  input_device: auto
+  output_device: auto
+  tls: false
+  require_auth: true
+  username: admin
+  password: ha
+  ha_url: http://homeassistant.local:8123
+  ha_token: ""
+  mcp_enabled: true
+schema:
+  openai_api_key: str
+  language: str
+  voice: str
+  sample_rate: int
+  input_device: str
+  output_device: str
+  tls: bool
+  require_auth: bool
+  username: str
+  password: str
+  ha_url: str
+  ha_token: str
+  mcp_enabled: bool
+ports:
+  "8443/tcp": 8443
+ports_description:
+  "8443/tcp": HTTPS API (if not using Ingress)
+devices:
+  - /dev/snd:/dev/snd:rwm

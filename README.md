@@ -12,7 +12,8 @@ Supervisor Add-on für Home Assistant OS, das den OpenAI `gpt-realtime` Audiomod
 ## Verzeichnisstruktur
 ```
 addon_repo/
-├── addon/            # Supervisor Add-on (config.json, Dockerfile, run scripts)
+├── repository.yaml   # Add-on Repository-Metadaten
+├── addon/            # Supervisor Add-on (config.yaml, Dockerfile, run scripts)
 ├── server/           # FastAPI + Audio Runtime
 └── docs/             # API/AUDIO Hinweise
 ```
