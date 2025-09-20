@@ -12,10 +12,14 @@ Supervisor Add-on für Home Assistant OS, das den OpenAI `gpt-realtime` Audiomod
 ## Verzeichnisstruktur
 ```
 addon_repo/
-├── repository.yaml   # Add-on Repository-Metadaten
-├── addon/            # Supervisor Add-on (config.yaml, Dockerfile, run scripts)
-├── server/           # FastAPI + Audio Runtime
-└── docs/             # API/AUDIO Hinweise
+├── repository.yaml           # Add-on Repository-Metadaten
+├── gpt_realtime_assist/      # Add-on Ordner
+│   ├── config.yaml           # Add-on Definition
+│   ├── Dockerfile
+│   ├── run.sh
+│   ├── rootfs/
+│   └── server/               # FastAPI + Audio Runtime
+└── docs/                     # API/AUDIO Hinweise
 ```
 
 ## Installation (Kurzfassung)
@@ -26,8 +30,8 @@ addon_repo/
 Detailierte Schritte siehe `docs/`.
 
 ## Entwicklung
-- Abhängigkeiten: `sounddevice`, `numpy`, `fastapi`, `websockets`, `aiohttp` u.a. (siehe `server/requirements.txt`).
-- Lokaler Start: `./addon/run.sh` verwendet denselben Bootstrap wie das Add-on.
+- Abhängigkeiten: `sounddevice`, `numpy`, `fastapi`, `websockets`, `aiohttp` u.a. (siehe `gpt_realtime_assist/server/requirements.txt`).
+- Lokaler Start: `./gpt_realtime_assist/run.sh` verwendet denselben Bootstrap wie das Add-on.
 - Audio-Devices via `arecord -l` / `aplay -l` prüfen.
 
 ## Lizenz
