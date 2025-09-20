@@ -45,5 +45,9 @@
     "ha_token": "str",
     "mcp_enabled": "bool"
   },
-  "devices": ["/dev/snd:/dev/snd:rwm"]
+  "devices": [
+    "/dev/snd:/dev/snd:rwm",
+    "/proc/asound:/proc/asound:ro",
+    "/sys/class/sound:/sys/class/sound:ro"
+  ]
 }
