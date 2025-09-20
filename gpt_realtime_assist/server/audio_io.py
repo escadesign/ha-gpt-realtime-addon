@@ -1,13 +1,21 @@
 import sounddevice as sd
 import numpy as np
-from typing import Optional, Callable
+from typing import Optional, Callable, Union
 from sounddevice import PortAudioError
+
+def _normalize_device(value: Optional[str]) -> Optional[Union[int, str]]:
+    if value in (None, "auto", ""):
+        return None
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return value
 
 class AudioIO:
     def __init__(self, sr: int, in_dev: Optional[str], out_dev: Optional[str]):
         self.sr = sr
-        self.in_dev = None if in_dev in (None, "auto") else in_dev
-        self.out_dev = None if out_dev in (None, "auto") else out_dev
+        self.in_dev = _normalize_device(in_dev)
+        self.out_dev = _normalize_device(out_dev)
         self._in = None
         self._out = None
         self._capture_warned = False
